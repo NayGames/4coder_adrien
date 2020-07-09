@@ -25,7 +25,18 @@ init_language_lua(Application_Links *app){
 		PSAT("if", CPP_TOKEN_KEY_OTHER),
 		PSAT("then", CPP_TOKEN_KEY_OTHER),
 		PSAT("do", CPP_TOKEN_KEY_OTHER),
-		PSAT("print", CPP_TOKEN_KEY_OTHER)
+		PSAT("print", CPP_TOKEN_KEY_OTHER),
+		PSAT("return", CPP_TOKEN_KEY_OTHER),
+		PSAT("elseif", CPP_TOKEN_KEY_OTHER),
+		PSAT("not", CPP_TOKEN_KEY_OTHER),
+		PSAT("true", CPP_TOKEN_KEY_OTHER),
+		PSAT("false", CPP_TOKEN_KEY_OTHER),
+		PSAT("self", CPP_TOKEN_KEY_OTHER),
+		PSAT("break", CPP_TOKEN_KEY_OTHER),
+		PSAT("until", CPP_TOKEN_KEY_OTHER),
+		PSAT("repeat", CPP_TOKEN_KEY_OTHER),
+		PSAT("in", CPP_TOKEN_KEY_OTHER),
+		
 	};
     
     parse_context_language_lua = create_parse_context(app, kw, ArrayCount(kw), 0, 0);

@@ -275,6 +275,8 @@ UpdateThemeColor(Application_Links *app)
         {Stag_Int_Constant, Constant},
         {Stag_Float_Constant, Constant},
         {Stag_Bool_Constant, Constant},
+		
+		{Stag_Comment, 0x00FF00FF},
     };
     set_theme_colors(app, common_colors, ArrayCount(common_colors));
 }
@@ -313,6 +315,11 @@ extern "C" GET_BINDING_DATA(get_bindings)
     begin_map(context, mapid_global);
 	
 	bind(context, 'm', MDFR_ALT, set_mark);
+	
+	bind(context, key_right, MDFR_ALT, change_active_panel); 
+	bind(context, key_left, MDFR_ALT, change_active_panel);
+	bind(context, key_f11, MDFR_NONE, toggle_fullscreen);
+	bind(context, key_f4, MDFR_ALT, exit_4coder);
 	
 	end_map(context);
 	

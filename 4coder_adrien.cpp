@@ -275,8 +275,6 @@ UpdateThemeColor(Application_Links *app)
         {Stag_Int_Constant, Constant},
         {Stag_Float_Constant, Constant},
         {Stag_Bool_Constant, Constant},
-		
-		{Stag_Comment, 0x00FF00FF},
     };
     set_theme_colors(app, common_colors, ArrayCount(common_colors));
 }

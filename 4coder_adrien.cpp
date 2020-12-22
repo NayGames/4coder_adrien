@@ -5,7 +5,6 @@
 #include "languages/4coder_language_css.h"
 #include "languages/4coder_language_lua.h"
 
-
 OPEN_FILE_HOOK_SIG(adrien_file_settings){
     // NOTE(allen|a4.0.8): The get_parameter_buffer was eliminated
     // and instead the buffer is passed as an explicit parameter through
@@ -21,7 +20,7 @@ OPEN_FILE_HOOK_SIG(adrien_file_settings){
     CString_Array extensions = get_code_extensions(&global_config.code_exts);
     
     Parse_Context_ID parse_context_id = 0;
-    
+	
     if (buffer.file_name != 0 && buffer.size < (16 << 20)){
         String name = make_string(buffer.file_name, buffer.file_name_len);
         String ext = file_extension(name);
@@ -161,11 +160,19 @@ OPEN_FILE_HOOK_SIG(adrien_file_settings){
     buffer_set_setting(app, &buffer, BufferSetting_WrapLine, wrap_lines);
     buffer_set_setting(app, &buffer, BufferSetting_VirtualWhitespace, use_virtual_whitespace);
     buffer_set_setting(app, &buffer, BufferSetting_Lex, use_lexer);
-    
+     
     // no meaning for return
     return(0);
 }
 			
+OPEN_FILE_HOOK_SIG(adrien_new_file){
+	Buffer_Summary buffer = get_buffer(app, buffer_id, AccessAll);
+	char str[] = "/*\nNew File\n*/\n\n\n";
+	buffer_replace_range(app, &buffer, 0, 0, str, sizeof(str)-1);
+
+	return(0);
+}
+
 bool
 CubicUpdateFixedDuration1(float *P0, float *V0, float P1, float V1, float Duration, float dt)
 {
@@ -245,21 +252,22 @@ SCROLL_RULE_SIG(casey_smooth_scroll_rule){
     return(result);
 }
 
-static bool GlobalEditMode;
-static bool GlobalBrightMode;
-
 static void
 UpdateThemeColor(Application_Links *app)
 {
-    int unsigned Background = (GlobalBrightMode ? 0xFFFFFFFF : 0xFF161616);
-    int unsigned Default = (GlobalBrightMode ? 0xFF000000 : 0xFFA08563);
-    int unsigned Constant = 0xFF6B8E23;
-    
+    int unsigned Constant   = 0xFF6B8E23;
+    int unsigned Background = 0xFF1E1E1E;
+	int unsigned Back_Cycle = 0x0CA00000;
+	
+	int unsigned Red   = 0xFFB04732;
+	int unsigned Blue  = 0xFF5AB7BE;
+	int unsigned Green = 0xFF75993C;
+	
     Theme_Color common_colors[] =
     {
-        {Stag_Comment, 0xFF7D7D7D},
-        {Stag_Keyword, 0xFFCD950C},
-        {Stag_Preproc, 0xFFDAB98F},
+		{Stag_Comment, 0xFF8A8071},
+        {Stag_Keyword, Red},
+        {Stag_Preproc, Blue},
         {Stag_Include, Constant},
         {Stag_Back, Background},
         {Stag_Margin, Background},
@@ -268,13 +276,28 @@ UpdateThemeColor(Application_Links *app)
         {Stag_List_Item,Background},
         {Stag_List_Item_Hover, 0xFF934420},
         {Stag_List_Item_Active, 0xFF934420},
-        {Stag_Default, Default},
-        
-        {Stag_Str_Constant, Constant},
-        {Stag_Char_Constant, Constant},
-        {Stag_Int_Constant, Constant},
-        {Stag_Float_Constant, Constant},
-        {Stag_Bool_Constant, Constant},
+        {Stag_Default, 0xFFA98247},
+		{Stag_Bar, 0xFFADA49A},
+        {Stag_Pop1, Red},
+		{Stag_Pop2, Red},
+		
+		{Stag_Back_Cycle_1, Back_Cycle},
+		{Stag_Back_Cycle_2, Back_Cycle},
+		{Stag_Back_Cycle_3, Back_Cycle},
+		{Stag_Back_Cycle_4, Back_Cycle},
+		
+		{Stag_Text_Cycle_1, Red},
+		{Stag_Text_Cycle_2, Red},
+		{Stag_Text_Cycle_3, Red},
+		{Stag_Text_Cycle_4, Red},
+		
+		{Stag_Highlight_Cursor_Line, 0xFF222222},
+		
+		{Stag_Str_Constant, Green},
+        {Stag_Char_Constant, Green},
+        {Stag_Int_Constant, Green},
+        {Stag_Float_Constant, Green},
+        {Stag_Bool_Constant, Green},
     };
     set_theme_colors(app, common_colors, ArrayCount(common_colors));
 }
@@ -296,6 +319,24 @@ START_HOOK_SIG(adrien_start)
     return(0);
 }
 
+CUSTOM_COMMAND_SIG(write_parentheses)
+CUSTOM_DOC("Inserts parentheses.")
+{
+	write_string(app, make_lit_string("()"));
+}
+
+CUSTOM_COMMAND_SIG(write_braces)
+CUSTOM_DOC("Inserts braces.")
+{
+	write_string(app, make_lit_string("{\n\n}"));
+}
+
+CUSTOM_COMMAND_SIG(write_brackets)
+CUSTOM_DOC("Inserts brackets.")
+{
+	write_string(app, make_lit_string("[]"));
+}
+
 extern "C" GET_BINDING_DATA(get_bindings)
 {
 	Bind_Helper context_actual = begin_bind_helper(data, size);
@@ -305,7 +346,8 @@ extern "C" GET_BINDING_DATA(get_bindings)
     set_command_caller(context, default_command_caller);
     set_render_caller(context, default_render_caller);
     set_open_file_hook(context, adrien_file_settings);
-    set_scroll_rule(context, casey_smooth_scroll_rule);
+    set_new_file_hook(context, adrien_new_file);
+	set_scroll_rule(context, casey_smooth_scroll_rule);
     set_end_file_hook(context, end_file_close_jump_list);
     
 	default_keys(context);
@@ -314,13 +356,22 @@ extern "C" GET_BINDING_DATA(get_bindings)
 	
 	bind(context, 'm', MDFR_ALT, set_mark);
 	
+	bind(context, '=', MDFR_CTRL, write_zero_struct);
+	
 	bind(context, key_right, MDFR_ALT, change_active_panel); 
 	bind(context, key_left, MDFR_ALT, change_active_panel);
 	bind(context, key_f11, MDFR_NONE, toggle_fullscreen);
 	bind(context, key_f4, MDFR_ALT, exit_4coder);
 	
 	end_map(context);
+
+	begin_map(context, mapid_file);
 	
+	bind(context, '(', MDFR_NONE, write_parentheses);
+	bind(context, '{', MDFR_NONE, write_braces);
+	bind(context, '[', MDFR_NONE, write_brackets);
+	
+	end_map(context);
 
 	end_bind_helper(context);
 	

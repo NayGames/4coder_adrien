@@ -337,6 +337,18 @@ CUSTOM_DOC("Inserts brackets.")
 	write_string(app, make_lit_string("[]"));
 }
 
+CUSTOM_COMMAND_SIG(write_double_quotes)
+CUSTOM_DOC("Inserts double quotes.")
+{
+	write_string(app, make_lit_string("\"\""));
+}
+
+CUSTOM_COMMAND_SIG(write_single_quotes)
+CUSTOM_DOC("Inserts single quotes.")
+{
+	write_string(app, make_lit_string("''"));
+}
+
 extern "C" GET_BINDING_DATA(get_bindings)
 {
 	Bind_Helper context_actual = begin_bind_helper(data, size);
@@ -370,6 +382,8 @@ extern "C" GET_BINDING_DATA(get_bindings)
 	bind(context, '(', MDFR_NONE, write_parentheses);
 	bind(context, '{', MDFR_NONE, write_braces);
 	bind(context, '[', MDFR_NONE, write_brackets);
+	bind(context, '\'', MDFR_NONE, write_single_quotes);
+	bind(context, '"', MDFR_NONE, write_double_quotes);
 	
 	end_map(context);
 
